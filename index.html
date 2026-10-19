@@ -283,6 +283,13 @@ details.acc .inner{padding:0 14px 14px}
 <script src="data/domain4.js"></script>
 <script src="data/exam1.js"></script>
 <script src="data/exam2.js"></script>
+<script src="data/exam3.js"></script>
+<script src="data/exam4.js"></script>
+<script src="data/exam5.js"></script>
+<script src="data/quiz-extra-d1.js"></script>
+<script src="data/quiz-extra-d2.js"></script>
+<script src="data/quiz-extra-d3.js"></script>
+<script src="data/quiz-extra-d4.js"></script>
 <script src="data/reference.js"></script>
 <script>
 (function(){
@@ -387,6 +394,7 @@ const ROADMAP=[
   {id:"r5e",t:"Take a Weak-skills quiz",link:"#quiz-weak",auto:"quizany:weak"}]},
  {n:6,label:"Week",title:"Practice Exam 2 and final review",hours:"5 h",items:[
   {id:"r6a",t:"Sit Practice Exam 2 (timed, no notes)",link:"#exams",auto:"exam:exam2"},
+  {id:"r6e",t:"Sit Practice Exams 3, 4 and 5, one per day, reviewing every miss",link:"#exams",auto:"examall:exam3,exam4,exam5"},
   {id:"r6b",t:"Retake the quiz for your weakest domain",link:"#quiz"},
   {id:"r6c",t:"Flashcards: only the ones marked unknown",link:"#flashcards"},
   {id:"r6d",t:"Read the exam-day tactics",link:"#exams"}]}
@@ -398,6 +406,7 @@ function autoDone(a){
   if(kind==="quiz"){return S.quizHistory.some(h=>h.quizId===arg&&pct(h.correct,h.total)>=80);}
   if(kind==="quizany"){return S.quizHistory.some(h=>h.quizId===arg);}
   if(kind==="exam"){return S.examHistory.some(h=>h.examId===arg);}
+  if(kind==="examall"){return arg.split(",").every(id=>S.examHistory.some(h=>h.examId===id));}
   return null;
 }
 function itemDone(it){const a=autoDone(it.auto); return a===null?!!S.roadmap[it.id]:a;}
@@ -544,7 +553,7 @@ function quizSummary(){
 /* ---------- exams ---------- */
 V.exams=()=>{
   const A=S.examAttempt;
-  return `<h1>Practice exams</h1><p class="muted small">65 questions · 130 minutes · domain weights matched (16 / 18 / 16 / 15). Scaled score is an estimate; AWS does not publish its conversion. The current beta form has 85 questions in 170 minutes, so the pace is the same: about 2 minutes a question.</p>
+  return `<h1>Practice exams</h1><p class="muted small">Five papers, 65 questions each · 130 minutes · domain weights matched (16 / 18 / 16 / 15). Scaled score is an estimate; AWS does not publish its conversion. The current beta form has 85 questions in 170 minutes, so the pace is the same: about 2 minutes a question.</p>
   ${A&&!A.submitted?`<div class="card stripe row between" style="border-left-color:var(--warn)"><div><b>Attempt in progress</b><div class="muted small">${esc((D.exams.find(e=>e.id===A.examId)||{}).title||"")} · ${Object.keys(A.answers).length} answered</div></div><div class="row"><a class="btn primary sm" href="#exam-${A.examId}">Resume</a><button class="btn sm" id="abandon">Abandon</button></div></div>`:""}
   <div class="grid-2">${D.exams.map(e=>{const hist=S.examHistory.filter(h=>h.examId===e.id);const best=hist.length?Math.max(...hist.map(h=>pct(h.correct,h.total))):null;return `<div class="card" style="display:flex;flex-direction:column;gap:8px"><span class="pill accent">${e.questions.length} questions · ${e.durationMinutes} min</span><h3>${esc(e.title)}</h3><div class="row between"><span class="muted small">${hist.length?hist.length+" attempt"+(hist.length>1?"s":"")+" · best "+best+"%":"Not attempted"}</span><a class="btn primary sm" href="#exam-${e.id}">${A&&A.examId===e.id&&!A.submitted?"Resume":"Start"}</a></div></div>`}).join("")}</div>
   ${S.examHistory.length?`<div class="tablewrap"><table><thead><tr><th>Date</th><th>Paper</th><th>Raw</th><th>Est.</th><th>D1</th><th>D2</th><th>D3</th><th>D4</th><th></th></tr></thead><tbody>${S.examHistory.slice().reverse().map(h=>`<tr><td class="muted">${new Date(h.date).toLocaleDateString()}</td><td>${esc(h.title)}</td><td class="num">${h.correct}/${h.total}</td><td class="num"><b>${scaled(h.correct,h.total)}</b></td>${[1,2,3,4].map(n=>`<td class="num">${h.byDomain&&h.byDomain[n]?pct(h.byDomain[n].c,h.byDomain[n].t)+"%":"—"}</td>`).join("")}<td><span class="pill ${scaled(h.correct,h.total)>=700?"ok":"bad"}">${scaled(h.correct,h.total)>=700?"Pass":"Fail"}</span></td></tr>`).join("")}</tbody></table></div>`:""}
